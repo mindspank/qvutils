@@ -1,7 +1,7 @@
 body {
-      font-size: 14px;
+      font-size: 12px;
       line-height: 22px;
-      background: #f4f4f4 url(docs/images/background.png);
+      background: #f4f4f4 url(images/background.png);
       color: #000;
       font-family: Helvetica Neue, Helvetica, Arial;
     }
@@ -23,6 +23,7 @@ body {
     a.toc_title, a.toc_title:visited {
       display: block;
       color: black;
+      font-size: 14;
       font-weight: bold;
       margin-top: 15px;
     }
@@ -34,7 +35,7 @@ body {
         font-weight: normal;
       }
     ul.toc_section {
-      font-size: 11px;
+      font-size: 12px;
       line-height: 14px;
       margin: 5px 0 0 0;
       padding-left: 0px;
@@ -56,17 +57,8 @@ body {
       width: 550px;
       margin: 40px 0 50px 260px;
     }
-    img#logo {
-      width: 396px;
-      height: 69px;
-    }
-    div.warning {
-      margin-top: 15px;
-      font: bold 11px Arial;
-      color: #770000;
-    }
     p {
-      margin: 20px 0;
+      margin: 10px 0;
       width: 550px;
     }
     a, a:visited {
@@ -76,14 +68,14 @@ body {
       color: #000;
     }
     h1, h2, h3, h4, h5, h6 {
-      padding-top: 20px;
+      padding-top: 15px;
     }
       h2 {
-        font-size: 20px;
+        font-size: 24px;
       }
     b.header {
-      font-size: 16px;
-      line-height: 30px;
+      font-size: 18px;
+      line-height: 20px;
     }
     span.alias {
       font-size: 14px;
@@ -146,10 +138,6 @@ body {
         padding: 10px 0 10px 30px;
         border: 0;
       }
-      img#logo {
-        width: auto;
-        height: auto;
-      }
       div.container {
         margin: 0;
         width: 100%;
@@ -161,4 +149,8 @@ body {
       pre {
         overflow: scroll;
       }
+    }
+    div.item {
+     border-top: 1px solid #bbb;
+     padding-top: 10px;
     }

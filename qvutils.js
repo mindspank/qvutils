@@ -97,31 +97,66 @@ if ('function' !== typeof Array.prototype.reduce) {
 	};
 }
 
+/**
+ * Fix for broken select boxes in Object extension properties
+ */
+if (!Qva.Mgr.mySelect) {
+	Qva.Mgr.mySelect = function(e, t, n, r) {
+		if (!Qva.MgrSplit(this, n, r)) return;
+		e.AddManager(this);
+		this.Element = t;
+		this.ByValue = true;
+		t.binderid = e.binderid;
+		t.Name = this.Name;
+		t.onchange = Qva.Mgr.mySelect.OnChange;
+		t.onclick = Qva.CancelBubble;
+	};
+	Qva.Mgr.mySelect.OnChange = function() {
+		var e = Qva.GetBinder(this.binderid);
+		if (!e.Enabled) return;
+		if (this.selectedIndex < 0) return;
+		var t = this.options[this.selectedIndex];
+		e.Set(this.Name, "text", t.value, true);
+	};
+	Qva.Mgr.mySelect.prototype.Paint = function(e, t) {
+		this.Touched = true;
+		var n = this.Element;
+		var r = t.getAttribute("value");
+		if (r === null) r = "";
+		var i = n.options.length;
+		n.disabled = e != "e";
+		for (var s = 0; s < i; ++s) {
+			if (n.options[s].value === r) {
+				n.selectedIndex = s;
+			}
+		}
+		n.style.display = Qva.MgrGetDisplayFromMode(this, e);
+	};
+}
 
 /**
  * Extension of QlikView JS API
  */
 
-
 /**
  * Returns a object with Columns, Rows and Metadata
- * @function getData
- * @returns {Object}
+ *
+ * @returns {Object} Data object
  */
 if (!Qva.Public.Wrapper.prototype.getData) {
 	Qva.Public.Wrapper.prototype.getData = function() {
 
 		var data = {},
-		header = this.Data.HeaderRows[0];
+			header = this.Data.HeaderRows[0];
 
 		data.Rows = this.Data.Rows;
-		data.Columns = Object.keys(data.Rows[0]).map(function(c) {
+		data.Column = Object.keys(data.Rows[0]).map(function(c) {
 			return data.Rows.map(function(r) {
 				return r[c];
 			});
 		});
 
-		data.Columns.forEach(function(element, index) {
+		data.Column.forEach(function(element, index) {
 			element.type = element[0].color === undefined ? "expression" : "dimension";
 			element.label = header[index].text;
 		});
@@ -156,118 +191,23 @@ if (!Qva.Public.Wrapper.prototype.showData) {
  * @returns {object} Returns jQuery object to work with
  */
 if (!Qva.Public.Wrapper.prototype.createDiv) {
-	Qva.Public.Wrapper.prototype.createDiv = function() {
+	Qva.Public.Wrapper.prototype.createDiv = function(id) {
 
-		var divName = this.Layout.ObjectId.replace("\\", "_");
+		id = (typeof id === "undefined") ? this.Layout.ObjectId.replace("\\", "_") : id;
 
 		if (this.Element.children.length === 0) {
 			$('<div/>', {
-				id: divName,
+				id: id,
 				height: this.GetHeight(),
 				width: this.GetWidth()
 			}).appendTo(this.Element);
 		} else {
-			$("#" + divName).css({
+			$("#" + id).attr({
 				height: this.GetHeight(),
 				width: this.GetWidth()
 			}).empty();
 		}
-		return $('#' + divName);
-	};
-}
-
-
-
-/**
- * Transposes rows -> columns and vice versa
- *
- * @param {array} arr - Data array containing either 2-D Rows or Column matrix
- */
-if (!Qva.Public.Wrapper.prototype.transpose) {
-	Qva.Public.Wrapper.prototype.transpose = function(arr) {
-		return Object.keys(arr[0]).map(function(c) {
-			return arr.map(function(r) {
-				return r[c];
-			});
-		});
-	};
-}
-
-
-/**
- * Gets Max value from an array of objects
- *
- * @param {array} arr
- * @param {string} [field=data] - Field/Property to get Max value from.
- * @returns {number} Returns the max value
- */
-if (!Qva.Public.Wrapper.prototype.getMax) {
-	Qva.Public.Wrapper.prototype.getMax = function(arr, field) {
-		field = (field === "undefined") ? "data" : field;
-		return arr.reduce(function(acc, c) {
-			return Math.max(c[field], acc);
-		}, -Infinity);
-	};
-}
-
-
-/**
- * Gets Min value from an array of objects
- *
- * @param {array} arr
- * @param {string} [field=data] Field/Property to get Min value from.
- * @returns {number} Returns the min value
- */
-if (!Qva.Public.Wrapper.prototype.getMin) {
-	Qva.Public.Wrapper.prototype.getMin = function(arr, field) {
-		field = (field === "undefined") ? "data" : field;
-		return arr.reduce(function(acc, c) {
-			return Math.min(c[field], acc);
-		}, Infinity);
-	};
-}
-
-
-/**
- * Is value a
- *
- * @param {number}
- * @return {Boolean}
- */
-if (!Qva.Public.Wrapper.prototype.isNumber) {
-	Qva.Public.Wrapper.prototype.isNumber = function(n) {
-		return !isNaN(parseFloat(n)) && isFinite(n);
-	};
-}
-
-
-//Validates input for null, empty and undefined
-if (!Qva.Public.Wrapper.prototype.isNullOrEmpty) {
-	Qva.Public.Wrapper.prototype.isNullOrEmpty = function(prop) {
-		if (prop === null || prop.length === 0 || prop === 'undefined' || prop === '') {
-			return true;
-		}
-		return false;
-	};
-}
-
-
-//Is given value a boolean?
-if (!Qva.Public.Wrapper.prototype.isBoolean) {
-	Qva.Public.Wrapper.prototype.isBoolean = function(obj) {
-		return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
-	};
-}
-
-
-//Returns a random value between min and max. Supply either a min & max or only a max value.
-if (!Qva.Public.Wrapper.prototype.getRandom) {
-	Qva.Public.Wrapper.prototype.getRandom = function(min, max) {
-		if (max === null) {
-			max = min;
-			min = 0;
-		}
-		return min + Math.floor(Math.random() * (max - min + 1));
+		return $('#' + id);
 	};
 }
 
@@ -280,7 +220,6 @@ if (!Qva.Public.Wrapper.prototype.getRandom) {
  * @param {String} options.ul.id ID of Ul
  * @param {String} options.ul.classes Classnames of UL
  */
-
 if (!Qva.Mgr.tabrow2.createTabrow) {
 	Qva.Mgr.tabrow2.prototype.createTabrow = function(opt) {
 		var defaults = {
@@ -333,37 +272,99 @@ if (!Qva.Mgr.tabrow2.createTabrow) {
 }
 
 
-//Select box fix
-if (!Qva.Mgr.mySelect) {
-	Qva.Mgr.mySelect = function(e, t, n, r) {
-		if (!Qva.MgrSplit(this, n, r)) return;
-		e.AddManager(this);
-		this.Element = t;
-		this.ByValue = true;
-		t.binderid = e.binderid;
-		t.Name = this.Name;
-		t.onchange = Qva.Mgr.mySelect.OnChange;
-		t.onclick = Qva.CancelBubble;
-	};
-	Qva.Mgr.mySelect.OnChange = function() {
-		var e = Qva.GetBinder(this.binderid);
-		if (!e.Enabled) return;
-		if (this.selectedIndex < 0) return;
-		var t = this.options[this.selectedIndex];
-		e.Set(this.Name, "text", t.value, true);
-	};
-	Qva.Mgr.mySelect.prototype.Paint = function(e, t) {
-		this.Touched = true;
-		var n = this.Element;
-		var r = t.getAttribute("value");
-		if (r === null) r = "";
-		var i = n.options.length;
-		n.disabled = e != "e";
-		for (var s = 0; s < i; ++s) {
-			if (n.options[s].value === r) {
-				n.selectedIndex = s;
-			}
+/**
+ * QvUtils Module - Generic utility belt
+ * @module
+ */
+var qvutils = (function() {
+	/* Top level object */
+	var Q = {};
+
+	/* Public Methods */
+
+	/**
+	 * Returns a random integer between min and max, inclusive. If you only pass one argument, it will return a number between 0 and that number.
+	 * @param {number} Minimum value
+	 * @param [number] Optional Maximum value
+	 * @return {number} Returns random number
+	 */
+	Q.getRandom = function(min, max) {
+		if (max === null) {
+			max = min;
+			min = 0;
 		}
-		n.style.display = Qva.MgrGetDisplayFromMode(this, e);
+		return min + Math.floor(Math.random() * (max - min + 1));
 	};
-}
+
+	/**
+	 * Checks if given value is a bool value
+	 * @param {*} Value to check
+	 * @return {boolean} Returns true of value is a boolean
+	 */
+	Q.isBoolean = function(value) {
+		return value === true || value === false || Object.prototype.toString.call(value) == '[object Boolean]';
+	};
+
+	/**
+	 * Checks if value is empty, null or undefined
+	 * @param {array|object|string} The value to inspect
+	 * @returns {boolean} Returns true if the value is empty, else false.
+	 */
+	Q.isNullOrEmpty = function(value) {
+		if (value === null || value.length === 0 || value === 'undefined' || value === '') {
+			return true;
+		}
+		return false;
+	};
+
+	/**
+	 * Checks if value is a number.
+	 * @param {number} The value to check.
+	 * @returns {boolean} Returns true if the value is a number, else false.
+	 */
+	Q.isNumber = function(value) {
+		return !isNaN(parseFloat(value)) && isFinite(value);
+	};
+
+	/**
+	 * Transposes rows -> columns and vice versa
+	 * @param {array} arr - Data array containing either 2-D Rows or Column matrix
+	 */
+	Q.transpose = function(arr) {
+		return Object.keys(arr[0]).map(function(c) {
+			return arr.map(function(r) {
+				return r[c];
+			});
+		});
+	};
+
+	/**
+	 * Gets Min value from an array of objects
+	 * @param {array} arr
+	 * @param {string} [prop=data] Field/Property to get Min value from.
+	 * @returns {number} Returns the min value
+	 */
+	Q.getMin = function(arr, prop) {
+		prop = (prop === "undefined") ? "data" : prop;
+		return arr.reduce(function(acc, c) {
+			return Math.min(c[prop], acc);
+		}, Infinity);
+	};
+
+	/**
+	 * Gets Max value from an array of objects
+	 *
+	 * @param {array} arr
+	 * @param {string} [field=data] - Field/Property to get Max value from.
+	 * @returns {number} Returns the max value
+	 */
+	Q.getMax = function(arr, field) {
+		field = (field === "undefined") ? "data" : field;
+		return arr.reduce(function(acc, c) {
+			return Math.max(c[field], acc);
+		}, -Infinity);
+	};
+
+	/* Expose object */
+	return Q;
+}());
