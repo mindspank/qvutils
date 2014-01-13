@@ -345,7 +345,7 @@ var qvutils = (function() {
 	 * @returns {number} Returns the min value
 	 */
 	Q.getMin = function(arr, prop) {
-		prop = (prop === undefined) ? "data" : prop;
+		prop = (prop === "undefined") ? "data" : prop;
 		return arr.reduce(function(acc, c) {
 			return Math.min(c[prop], acc);
 		}, Infinity);
@@ -359,7 +359,7 @@ var qvutils = (function() {
 	 * @returns {number} Returns the max value
 	 */
 	Q.getMax = function(arr, field) {
-		var field = (field === undefined) ? "data" : field;
+		field = (field === "undefined") ? "data" : field;
 		return arr.reduce(function(acc, c) {
 			return Math.max(c[field], acc);
 		}, -Infinity);
